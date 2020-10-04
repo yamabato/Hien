@@ -1,0 +1,14 @@
+program : (state)+
+
+state : expr
+      | func
+      | call
+      | var
+      | const
+      | loop
+      | if
+      | switch
+      | use
+      | break
+      | continue
+      | return
