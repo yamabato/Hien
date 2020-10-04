@@ -1,14 +1,57 @@
-program : (state)+
+?program: [(state)+]
 
-state : expr
-      | func
-      | call
-      | var
-      | const
-      | loop
-      | if
-      | switch
-      | use
-      | break
-      | continue
-      | return
+?state: var LINE_END
+      | const LINE_END
+      | loop LINE_END
+      | "break" LINE_END
+      | "continue" LINE_END
+
+TYPE: "int"
+    | "float"
+    | "string"
+    | "later"
+    | "bool"
+    | "dict"
+
+?type: TYPE
+     | "[]" type
+
+var: identifier "[" type "]" ("<-" expr | "?")
+const: IDENTIFIER "[" type "]" "<-" expr
+
+?expr: term
+     | addition
+
+?term: fact
+     | term "*" fact
+     | term "/" fact
+
+?addition: expr "+" term
+         | expr "-" term
+
+?fact: identifier
+     | number
+
+loop: "loop" int_literal "{" state* "}"
+
+
+alphabet: ("a".."z" | "A".."Z")
+char: (alphabet | "_")
+
+identifier: char+
+IDENTIFIER: ("A".."Z" | "_")+
+int_literal: ("1".."9") ("0".."9")+
+float_literal: int_literal "." int_literal
+number: ("+" | "-")? int_literal
+
+LINE_END: ";"
+
+%import common.SIGNED_NUMBER
+%import common.WS
+
+COMMENT: "#" /[^\n]/*
+
+%ignore WS
+%ignore "\n"
+%ignore COMMENT
+
