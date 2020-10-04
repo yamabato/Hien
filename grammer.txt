@@ -22,26 +22,65 @@ TYPE: "int"
 ?type: TYPE
      | "[]" type
 
-var: identifier "[" type "]" ("<-" expr | "?")
-const: IDENTIFIER "[" type "]" "<-" expr
+LALPHABET: "a".."z"
+UALPHABET: "A".."Z"
+ALPHABET: LALPHABET | UALPHABET
+DIGIT: "0".."9"
+UNDERBAR: "_"
+ATMARK: "@"
+LANGCHAR: "$"
+CHAR: ALPHABET | DIGIT | UNDERBAR | ATMARK
+
+GT: ">"
+LT: "<"
+GE: ">="
+LE: "<="
+EQ: "=="
+
+ADD: "+"
+SUB: "-"
+MUL: "*"
+DIV: "/"
+MOD: "%"
+RDW: "//"
+
+comp: GT | LT | GE | LE | EQ
+
+LANGVAR: LANGCHAR IDENTIFIER
+IDENTIFIER: ALPHABET CHAR*
+CIDENTIFIER: ("A".."Z" | "_")+
+
+int_literal: NUMBER
+number: SIGNED_NUMBER ("." int_literal)?
+
+LINE_END: ";"
 
 ?expr: term
      | addition
 
 ?term: fact
-     | term "*" fact
-     | term "/" fact
+     | term MUL  fact
+     | term DIV  fact
+     | term MOD  fact
+     | term RDW fact
 
-?addition: expr "+" term
-         | expr "-" term
+?addition: expr ADD term
+         | expr SUB term
 
-?condition: expr comp expr
-
-comp: ("<" | ">" | "<=" | ">=" | "==")
-?fact: identifier
+?fact: LANGVAR
+     | IDENTIFIER
+     | CIDENTIFIER
      | number
      | call
 
+?condition: expr comp expr
+
+arg: IDENTIFIER "[" type "]"
+
+
+
+var: IDENTIFIER "[" type "]" ("<-" expr | "?")
+const: CIDENTIFIER "[" type "]" "<-" expr
 loop: "loop" int_literal "{" state* "}"
 
 if: "if" condition "{" state* "}" else
@@ -49,31 +88,18 @@ else: "else" "{" state* "}"
 
 switch: "switch" "{" c_case+ else? "}"
       | "switch" expr "{" v_case+ else? "}"
-
 c_case: "case" condition "{" state* "}"
 v_case: "case" expr "{" state* "}"
 
-arg: identifier "[" type "]"
-
-func: "func" identifier "(" (arg ("," arg)*)? ")" "->" (type | "void") "{" state* "}"
+func: "func" IDENTIFIER "(" (arg ("," arg)*)? ")" "->" (type | "void") "{" state* "}"
+call: IDENTIFIER "(" (expr ("," expr)* )? ")"
 return: "return" expr?
 
-call: identifier "(" (expr ("," expr)* )? ")"
-
-use: "use" identifier ("," identifier)*
-
-alphabet: ("a".."z" | "A".."Z")
-char: (alphabet | "_" | "@")
-
-identifier: char+
-IDENTIFIER: ("A".."Z" | "_")+
-int_literal: SIGNED_NUMBER
-float_literal: int_literal "." int_literal
-number: ("+" | "-")? int_literal
-
-LINE_END: ";"
+use: "use" IDENTIFIER ("," IDENTIFIER)*
 
 %import common.SIGNED_NUMBER
+%import common.NUMBER
+%import common.CNAME
 %import common.WS
 
 COMMENT: "#" /[^\n]/*
