@@ -3,8 +3,14 @@
 ?state: var LINE_END
       | const LINE_END
       | loop LINE_END
+      | if LINE_END
+      | switch LINE_END
+      | func LINE_END
+      | call LINE_END
+      | use LINE_END
       | "break" LINE_END
       | "continue" LINE_END
+      | return LINE_END
 
 TYPE: "int"
     | "float"
@@ -29,18 +35,39 @@ const: IDENTIFIER "[" type "]" "<-" expr
 ?addition: expr "+" term
          | expr "-" term
 
+?condition: expr comp expr
+
+comp: ("<" | ">" | "<=" | ">=" | "==")
 ?fact: identifier
      | number
+     | call
 
 loop: "loop" int_literal "{" state* "}"
 
+if: "if" condition "{" state* "}" else
+else: "else" "{" state* "}"
+
+switch: "switch" "{" c_case+ else? "}"
+      | "switch" expr "{" v_case+ else? "}"
+
+c_case: "case" condition "{" state* "}"
+v_case: "case" expr "{" state* "}"
+
+arg: identifier "[" type "]"
+
+func: "func" identifier "(" (arg ("," arg)*)? ")" "->" (type | "void") "{" state* "}"
+return: "return" expr?
+
+call: identifier "(" (expr ("," expr)* )? ")"
+
+use: "use" identifier ("," identifier)*
 
 alphabet: ("a".."z" | "A".."Z")
-char: (alphabet | "_")
+char: (alphabet | "_" | "@")
 
 identifier: char+
 IDENTIFIER: ("A".."Z" | "_")+
-int_literal: ("1".."9") ("0".."9")+
+int_literal: SIGNED_NUMBER
 float_literal: int_literal "." int_literal
 number: ("+" | "-")? int_literal
 

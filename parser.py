@@ -5,10 +5,10 @@ with open("grammer.txt",mode="r") as f:
 
 program = """
 
-loop 10{
-};
+i[int] <- f(1,12,a);
 
 """
 
 parser = Lark(rule, start="program", parser="lalr")
 tree = parser.parse(program)
+print(tree.pretty())
